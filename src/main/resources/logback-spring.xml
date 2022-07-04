@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!--打印sql参数-->
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
+
+    <!-- 输出格式 -->
+    <property name="out.pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %level [%X{requestId}] --- [%thread] %logger{36} : %msg%n" />
+     <!-- 活动文件的大小 -->
+    <property name="max.file.size" value="10MB"/>
+    <!-- 保留的归档文件的最大数量 -->
+    <property name="max.history" value="90"/>
+    <!-- 控制所有归档日志文件的总大小 -->
+    <property name="total.size.cap" value="5GB"/>
+
+    <appender name="fileLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 文件路径 ，注意LOG_PATH是默认值，它的配置对应application.properties里的logging.path值-->
+        <file>${LOG_FILE}</file>
+        <!--滚动策略，按照时间和文件大小滚动 SizeAndTimeBasedRollingPolicy-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--文件路径,定义了日志的切分方式——把每一天的日志归档到一个文件中,以防止日志填满整个磁盘空间-->
+            <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+            <!--限定单个日志文件大小-->
+            <maxFileSize>${max.file.size}</maxFileSize>
+            <!--只保留最近90天的日志-->
+            <!--<maxHistory>${max.history}</maxHistory>-->
+            <!--限定的所有的归档日志文件，用来指定日志文件的上限大小，那么到了这个值，就会删除旧的日志-->
+            <totalSizeCap>${total.size.cap}</totalSizeCap>
+        </rollingPolicy>
+        <!--日志输出编码格式化-->
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>${out.pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="consoleLog" class="ch.qos.logback.core.ConsoleAppender">
+        <!--展示格式 layout-->
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>${out.pattern}</pattern>
+        </layout>
+    </appender>
+    <!--指定最基础的日志输出级别-->
+    <root level="INFO">
+        <appender-ref ref="consoleLog"/>
+        <appender-ref ref="fileLog"/>
+    </root>
+</configuration>

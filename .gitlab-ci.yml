@@ -1,0 +1,36 @@
+# maven:3-jdk-8 和 docker 的组合镜像。详情参考 https://hub.docker.com/r/ghj335664144/docker-maven-jdk8
+image: ghj335664144/docker-maven-jdk8
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=/.m2"
+  MAVEN_SETTING_OPTS: "-s /.m2/settings.xml"
+  TAG: my/web-service-api:v0.1  # 镜像名称
+  PORT: 18094
+  CONTAINER_NAME: web-service-api # 容器名称
+
+stages:
+  - oneClick
+
+project-oneClick-deploy:
+  stage: oneClick
+  tags:
+    - example-tag
+  only:
+    - master
+  before_script:
+    - docker info
+  script:
+    # maven 打包
+    - mvn $MAVEN_OPTS clean package -Dmaven.test.skip=true $MAVEN_SETTING_OPTS
+    # docker 镜像构建
+    - docker build -t $TAG --rm .
+    # 删除旧容器
+    - docker rm -f $CONTAINER_NAME || true
+    # 容器运行
+    - docker run -d --name $CONTAINER_NAME
+      --restart always
+      -p $PORT:$PORT
+      -v /data/log/"$CONTAINER_NAME"/logs:/logs
+      -v /etc/localtime:/etc/localtime:ro
+      -e TZ=Asia/Shanghai
+      $TAG
